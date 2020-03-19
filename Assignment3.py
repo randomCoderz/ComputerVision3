@@ -27,6 +27,7 @@ def step1(img):
             # Step 2
             try:
                 if img[i - 1, j + 1] > 0 or img[i, j + 1] > 0 or img[i + 1, j + 1] > 0 or img[i - 1, j] > 0 or img[i + 1, j] > 0 or img[i - 1, j - 1] > 0 or img[i, j - 1] > 0 or img[i + 1, j - 1] > 0:
+                    print("")
             except IndexError:
                 pass
 
