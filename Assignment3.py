@@ -7,35 +7,33 @@ import numpy as np
 
 def step1(img):
     nbd = 1
-    lnbd = 1
-    final_img = np.zeros(img.shape)
     for i in range(img[0]):
+        lnbd = 1
         for j in range(img[1]):
-            if img[i, j] == 1 and img[i, j-1] == 0:
-                # Decide that the pixel (i,j) is the border,
-                nbd += 1
-                # increment i2,j2 <- (i, j-1)
-            elif img[i, j] >= 1 and img[i, j+1] == 0:
-                # Decide that the pixel is the (i,j) is the border following starting point of a hole border
-                nbd += 1
-                # (i2, j2) <- (i, j + 1)
-                if img[i, j] > 1:
-                    lnbd = img[i, j]
-            else:
-                lndb = step4(img, lnbd, i, j)
-                continue
-            # Step 2
-            try:
-                if img[i - 1, j + 1] > 0 or img[i, j + 1] > 0 or img[i + 1, j + 1] > 0 or img[i - 1, j] > 0 or img[i + 1, j] > 0 or img[i - 1, j - 1] > 0 or img[i, j - 1] > 0 or img[i + 1, j - 1] > 0:
-                    print("")
-            except IndexError:
-                pass
+            # Get width of image
+            width, height = img.size
+            # Check if there is outer
+            is_outer = img[i, j] == 1 and (j == 0 or img[i, j-1] == 0)
+            # Check if there is a hole
+            is_hole = img[i, j] >= 1 and (j == width - 1 or img[i, j+1] == 0)
+            if is_outer or is_hole:
+                border = []
+                border_prime = []
+                from_pixel = [j, i]
+                if is_outer:
+                    nbd += 1
+                    from_pixel[j] -= 1
 
+                else:
+                    nbd += 1
+                    if img[j, i] > 1:
+                        lnbd = img[j, i]
+                    from_pixel[j] += 1
 
-def step4(img, lnbd, i, j):
-    if img[i][j] != 1:
-        lnbd = abs(img[i][j])
-    return lnbd
+            # Step 4
+            if img[j, i] != 0 and img[j, i] != 1:
+                lnbd = abs(img[i][j])
+            return lnbd
 
 
 if __name__ == "__main__":
