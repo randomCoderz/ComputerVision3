@@ -26,7 +26,7 @@ def step1(img):
                 from_pixel = img[i, j]
                 if is_outer:
                     nbd += 1
-                    from_pixel[j] -= 1
+                    from_pixel = img[i, j - 1]
                     border = outer
                     if root[lnbd] == outer:
                         # TODO borderPrime parent
@@ -38,7 +38,7 @@ def step1(img):
                     nbd += 1
                     if img[i, j] > 1:
                         lnbd = img[i, j]
-                    from_pixel[j] += 1
+                    from_pixel = img[i, j + 1]
                     border = hole
                     if root[lnbd] == outer:
                         # TODO borderPrime
@@ -46,7 +46,7 @@ def step1(img):
                     elif root[lnbd] == hole:
                         # TODO borderPrime parent
                         print("borderPrime_parent_hole")
-                step3(img, img[i, j], from_pixel[i, j], nbd)
+                step3(img, img[i, j], from_pixel, nbd)
             # Step 4
             if img[j, i] != 0 and img[j, i] != 1:
                 lnbd = abs(img[i][j])
@@ -66,7 +66,7 @@ def move(pixel, img, direct, dir_delta):
 def get_direction(from_dir, to_dir, delta_dir):
     delta = to_dir - from_dir
     for i in range(delta_dir):
-        if delta_dir == delta_dir[i]:
+        if delta == delta_dir[i]:
             return delta_dir[i]
     return [None]
 
