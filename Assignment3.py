@@ -23,10 +23,10 @@ def step1(img):
             is_hole = img[i, j] >= 1 and (j == width - 1 or img[i, j+1] == 0)
             if is_outer or is_hole:
                 border = []
-                from_pixel = img[i, j]
+                from_pixel = [i, j]
                 if is_outer:
                     nbd += 1
-                    from_pixel = img[i, j - 1]
+                    from_pixel = [i, j - 1]
                     border = outer
                     if root[lnbd] == outer:
                         # TODO borderPrime parent
@@ -38,7 +38,7 @@ def step1(img):
                     nbd += 1
                     if img[i, j] > 1:
                         lnbd = img[i, j]
-                    from_pixel = img[i, j + 1]
+                    from_pixel = [i, j + 1]
                     border = hole
                     if root[lnbd] == outer:
                         # TODO borderPrime
@@ -46,46 +46,68 @@ def step1(img):
                     elif root[lnbd] == hole:
                         # TODO borderPrime parent
                         print("borderPrime_parent_hole")
-                step3(img, img[i, j], from_pixel, nbd)
+                to_pix = [i, j]
+                step3(img, to_pix, from_pixel, nbd)
             # Step 4
             if img[j, i] != 0 and img[j, i] != 1:
                 lnbd = abs(img[i][j])
             return lnbd
 
 
-def move(pixel, img, direct, dir_delta):
-    newp = pixel + dir_delta[direct]
-    width, height = img.size
-    if(0 < newp[1] <= height) and (0 < newp[2] <= width):
-        if img[newp] != 0:
-            return newp
-    return 0
+def translation(to_translate, current_pixel):
+    i, j = current_pixel
+    i, j = i + to_translate[0], j + to_translate[1]
+    return i, j
 
 
 # find direction between two given pixels
-def get_direction(from_dir, to_dir, delta_dir):
-    delta = to_dir - from_dir
-    for i in range(delta_dir):
-        if delta == delta_dir[i]:
-            return delta_dir[i]
-    return [None]
+def get_start_position(to_dir, from_dir):
+    return from_dir[0] - to_dir[0], from_dir[1] - to_dir[1]
 
 
-def step3(img, from_pixel, to_pixel, nbd):
-    dir_delta = [np.indices((-1, 0)), np.indices((-1, 1)), np.indices((0, 1)), np.indices((1, 1)),
-                 np.indices((1, 0)), np.indices((1, -1)), np.indices((0, -1)), np.indices((-1, -1))]
-    direction = get_direction(from_pixel, to_pixel, dir_delta)
-    moved = clockwise(direction)
-    while moved != direction:
-        new_pixel = move(from_pixel, img, moved, dir_delta)
+def step3(img, current_pixel, from_pixel, nbd):
+    # Create a "circular array", we will use this to help iterate clockwise, counterclockwise
+    coord_map = [(-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1)]
+    # Translate the current pixel values to match the circular array format
+    moved = get_start_position(current_pixel, from_pixel)
+    # 3.1
+    p1 = (0, 0)
+    for i in range(8):
+        # Comparing values, so get the actual value on the actual coordinate
+        pix_translated = translation(moved, current_pixel)
+        # Get actual value, not the coor_map
+        newp = img[pix_translated[0], pix_translated[1]]
+        # Check to see if that point's value is equal to zero
+        if newp != 0:
+            p1 = moved[0], moved[1]
+            break
+        moved = clockwise(coord_map, moved)
+
+    if p1 == (0, 0):
+        return
+
+    # 3.2
+    # set i1, j1 = i2,j2
+    p2 = translation(p1, current_pixel)
+    # set i3, j3 = i, j
+    p3 = current_pixel[0], current_pixel[1]
+    moved = get_start_position(p3, p2)
+    
+
+# Move clockwise around pixel
+def clockwise(coord_map, point):
+    next_index = coord_map.index(point) + 1
+    leng = len(coord_map) - 1
+    if next_index > leng:
+        next_index = 0
+    return coord_map[next_index]
 
 
-def clockwise(direction):
-    return (direction % 8) + 1
-
-
-def counterclockwise(direction):
-    return ((direction + 6) % 8) + 1
+def counterclockwise(coord_map, point):
+    next_index = coord_map.index(point) - 1
+    if next_index < 0:
+        next_index = 7
+    return coord_map[next_index]
 
 
 if __name__ == "__main__":
