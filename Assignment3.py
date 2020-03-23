@@ -28,24 +28,24 @@ def step1(img):
                     nbd += 1
                     from_pixel = [i, j - 1]
                     border = outer
-                    if root[lnbd] == outer:
-                        # TODO borderPrime parent
-                        print("borderPrime_parent_outer")
-                    elif root[lnbd] == hole:
-                        # TODO borderPrime
-                        print("borderPrime_outer")
+                    # if root[lnbd] == outer:
+                    #     # TODO borderPrime parent
+                    #     print("borderPrime_parent_outer")
+                    # elif root[lnbd] == hole:
+                    #     # TODO borderPrime
+                    #     print("borderPrime_outer")
                 else:
                     nbd += 1
                     if img[i, j] > 1:
                         lnbd = img[i, j]
                     from_pixel = [i, j + 1]
                     border = hole
-                    if root[lnbd] == outer:
-                        # TODO borderPrime
-                        print("borderPrime_outer")
-                    elif root[lnbd] == hole:
-                        # TODO borderPrime parent
-                        print("borderPrime_parent_hole")
+                    # if root[lnbd] == outer:
+                    #     # TODO borderPrime
+                    #     print("borderPrime_outer")
+                    # elif root[lnbd] == hole:
+                    #     # TODO borderPrime parent
+                    #     print("borderPrime_parent_hole")
                 to_pix = [i, j]
                 step3(img, to_pix, from_pixel, nbd)
             # Step 4
@@ -92,6 +92,25 @@ def step3(img, current_pixel, from_pixel, nbd):
     # set i3, j3 = i, j
     p3 = current_pixel[0], current_pixel[1]
     moved = get_start_position(p3, p2)
+    for counter in range(8):
+        # 3.3
+        p4 = (0, 0)
+        pix_translated = translation(moved, current_pixel)
+        p4_actual_val = img[pix_translated[0], pix_translated[1]]
+        if p4_actual_val != 0:
+            p4 = moved[0], moved[1]
+        # 3.4
+        if img[p3[0], p3[1] + 1] == 0:
+            img[p3[0], p3[1]] = -nbd
+        if img[p3[0], p3[1] + 1] != 0 and img[p3[0], p3[1]] == 1:
+            img[p3[0], p3[1]] = nbd
+        # 3.5
+        if p4 == current_pixel and p3 == p2:
+            break
+        p2 = p3
+        p3 = p4
+        moved = counterclockwise(coord_map, moved)
+    return img
 
 
 # Move clockwise around pixel
@@ -110,8 +129,16 @@ def counterclockwise(coord_map, point):
     return coord_map[next_index]
 
 
+def open_cv_contour(image):
+    ret, thres = cv.threshold(image, 127, 255, cv.THRESH_BINARY)
+    # Get contour
+    bin_image, contour, hierarchy = cv.findContours(thres, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
+    print("Contour: ",  contour)
+    print("Hierarchy: ", hierarchy)
+
+
 if __name__ == "__main__":
     toy_img = np.array([[1, 1, 1, 1, 1, 1, 1, 0, 0], [1, 0, 0, 1, 0, 0, 1, 0, 1], [1, 0, 0, 1, 0, 0, 1, 0, 0],
                         [1, 1, 1, 1, 1, 1, 1, 0, 0]], np.uint8)
-
-    step1(toy_img)
+    open_cv_contour(toy_img)
+    # step1(toy_img)
