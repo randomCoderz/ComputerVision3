@@ -47,15 +47,15 @@ def step1(img):
                     #     # TODO borderPrime parent
                     #     print("borderPrime_parent_hole")
                 to_pix = [i, j]
-                step3(img, to_pix, from_pixel, nbd)
-            # Step 4
-            if img[j, i] != 0 and img[j, i] != 1:
-                lnbd = abs(img[i][j])
-            return lnbd
+                img = step3(img, to_pix, from_pixel, nbd)
+        # Step 4
+        if img[i, j] != 0 and img[i, j] != 1:
+            lnbd = abs(img[i][j])
+    return img
 
 
 def translation(to_translate, current_pixel):
-    i, j = current_pixel
+    i, j = current_pixel[0], current_pixel[1]
     i, j = i + to_translate[0], j + to_translate[1]
     return i, j
 
@@ -73,15 +73,18 @@ def step3(img, current_pixel, from_pixel, nbd):
     # 3.1
     p1 = (0, 0)
     for i in range(8):
-        # Comparing values, so get the actual value on the actual coordinate
-        pix_translated = translation(moved, current_pixel)
-        # Get actual value, not the coor_map
-        newp = img[pix_translated[0], pix_translated[1]]
-        # Check to see if that point's value is equal to zero
-        if newp != 0:
-            p1 = moved[0], moved[1]
-            break
-        moved = clockwise(coord_map, moved)
+        try:
+            # Comparing values, so get the actual value on the actual coordinate
+            pix_translated = translation(moved, current_pixel)
+            # Get actual value, not the coor_map
+            newp = img[pix_translated[0], pix_translated[1]]
+            # Check to see if that point's value is equal to zero
+            if newp != 0:
+                p1 = moved[0], moved[1]
+                break
+            moved = clockwise(coord_map, moved)
+        except IndexError:
+            pass
 
     if p1 == (0, 0):
         return
@@ -122,6 +125,7 @@ def clockwise(coord_map, point):
     return coord_map[next_index]
 
 
+# Move counterclockwise around the pixel
 def counterclockwise(coord_map, point):
     next_index = coord_map.index(point) - 1
     if next_index < 0:
@@ -130,15 +134,19 @@ def counterclockwise(coord_map, point):
 
 
 def open_cv_contour(image):
-    ret, thres = cv.threshold(image, 127, 255, cv.THRESH_BINARY)
+    ret, thres = cv.threshold(image, 0, 1, cv.THRESH_BINARY)
+    print("Thres: ", thres)
     # Get contour
     bin_image, contour, hierarchy = cv.findContours(thres, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
-    print("Contour: ",  contour)
-    print("Hierarchy: ", hierarchy)
+    print("Contour: \n",  contour)
+    print("Hierarchy: \n", hierarchy)
 
 
 if __name__ == "__main__":
-    toy_img = np.array([[1, 1, 1, 1, 1, 1, 1, 0, 0], [1, 0, 0, 1, 0, 0, 1, 0, 1], [1, 0, 0, 1, 0, 0, 1, 0, 0],
+    toy_img = np.array([[1, 1, 1, 1, 1, 1, 1, 0, 0],
+                        [1, 0, 0, 1, 0, 0, 1, 0, 1],
+                        [1, 0, 0, 1, 0, 0, 1, 0, 0],
                         [1, 1, 1, 1, 1, 1, 1, 0, 0]], np.uint8)
     open_cv_contour(toy_img)
-    # step1(toy_img)
+    step1(toy_img)
+
