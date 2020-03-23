@@ -92,7 +92,7 @@ def step3(img, current_pixel, from_pixel, nbd):
     # set i3, j3 = i, j
     p3 = current_pixel[0], current_pixel[1]
     moved = get_start_position(p3, p2)
-    
+
 
 # Move clockwise around pixel
 def clockwise(coord_map, point):
